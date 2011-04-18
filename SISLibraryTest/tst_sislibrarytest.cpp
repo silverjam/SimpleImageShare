@@ -74,6 +74,7 @@ void SISLibraryTest::testSerialization()
     QVERIFY( cmds2.parse_ProtocolVersion() );
 
     QVERIFY( sink.m_b_handle_ProtocolVersion );
+    QVERIFY( ! sink.nothingCalled() );
 }
 
 QTEST_APPLESS_MAIN(SISLibraryTest);
