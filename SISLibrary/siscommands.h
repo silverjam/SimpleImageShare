@@ -14,7 +14,7 @@ public:
 
     enum CommandCodes {
         COMMAND_PROTO_VERSION = 42,
-        COMMAND_DISCOVER_IMAGE_SETS,
+        COMMAND_DISCOVERED_IMAGE_SETS,
     };
 
     SisCommands(QDataStream&, ICommandSink*);
@@ -24,8 +24,8 @@ public:
     void build_ProtocolVersion();
     bool parse_ProtocolVersion();
 
-    void build_DiscoverImageSets(int count);
-    bool parse_DiscoverImageSets();
+    void build_DiscoveredImageSets(int count);
+    bool parse_DiscoveredImageSets();
 
 private:
     QDataStream& m_dataStream;

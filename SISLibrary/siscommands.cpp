@@ -19,8 +19,8 @@ SisCommands::parseOne()
     switch(command) {
     case COMMAND_PROTO_VERSION:
         return parse_ProtocolVersion();
-    case COMMAND_DISCOVER_IMAGE_SETS:
-        return parse_DiscoverImageSets();
+    case COMMAND_DISCOVERED_IMAGE_SETS:
+        return parse_DiscoveredImageSets();
     }
 
     return false;
@@ -48,20 +48,20 @@ SisCommands::parse_ProtocolVersion()
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 void
-SisCommands::build_DiscoverImageSets(int count)
+SisCommands::build_DiscoveredImageSets(int count)
 {
-    m_dataStream << COMMAND_DISCOVER_IMAGE_SETS;
+    m_dataStream << COMMAND_DISCOVERED_IMAGE_SETS;
     m_dataStream << count;
 }
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 bool
-SisCommands::parse_DiscoverImageSets()
+SisCommands::parse_DiscoveredImageSets()
 {
-    DiscoverImageSets info;
+    DiscoveredImageSets info;
     m_dataStream >> info.count;
 
-    m_pSink->handle_DiscoverImageSets(info);
+    m_pSink->handle_DiscoveredImageSets(info);
 
     return true;
 }

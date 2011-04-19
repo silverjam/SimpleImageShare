@@ -14,7 +14,7 @@ public:
 
 private Q_SLOTS:
     void testProtoVersion();
-    void testDiscoverImageSets();
+    void testDiscoveredImageSets();
 };
 
 SISLibraryTest::SISLibraryTest()
@@ -25,16 +25,16 @@ class TestCommanSink : public ICommandSink
 {
 public:
     TestCommanSink()
-        : m_b_handle_DiscoverImageSets(false)
+        : m_b_handle_DiscoveredImageSets(false)
         , m_b_handle_ProtocolVersion(false)
     {}
 
-    DiscoverImageSets m_DiscoverImageSets;
-    bool m_b_handle_DiscoverImageSets;
-    void handle_DiscoverImageSets(const DiscoverImageSets& input)
+    DiscoveredImageSets m_DiscoveredImageSets;
+    bool m_b_handle_DiscoveredImageSets;
+    void handle_DiscoveredImageSets(const DiscoveredImageSets& input)
     {
-        m_b_handle_DiscoverImageSets = true;
-        m_DiscoverImageSets = input;
+        m_b_handle_DiscoveredImageSets = true;
+        m_DiscoveredImageSets = input;
     }
 
     ProtocolVersion m_ProtocolVersion;
@@ -48,7 +48,7 @@ public:
     bool nothingCalled()
     {
         return
-            ! m_b_handle_DiscoverImageSets &&
+            ! m_b_handle_DiscoveredImageSets &&
             ! m_b_handle_ProtocolVersion
         ;
     }
@@ -78,7 +78,7 @@ void SISLibraryTest::testProtoVersion()
     QVERIFY( ! sink.nothingCalled() );
 }
 
-void SISLibraryTest::testDiscoverImageSets()
+void SISLibraryTest::testDiscoveredImageSets()
 {
     QBuffer buf;
     buf.open(QIODevice::ReadWrite);
@@ -88,7 +88,7 @@ void SISLibraryTest::testDiscoverImageSets()
     QDataStream ds1(&buf);
 
     SisCommands cmds1(ds1, &sink);
-    cmds1.build_DiscoverImageSets(42);
+    cmds1.build_DiscoveredImageSets(42);
 
     QVERIFY( sink.nothingCalled() );
 
@@ -98,10 +98,10 @@ void SISLibraryTest::testDiscoverImageSets()
     SisCommands cmds2(ds2, &sink);
     QVERIFY( cmds2.parseOne() );
 
-    QVERIFY( sink.m_b_handle_DiscoverImageSets );
+    QVERIFY( sink.m_b_handle_DiscoveredImageSets );
     QVERIFY( ! sink.nothingCalled() );
 
-    QVERIFY( sink.m_DiscoverImageSets.count == 42 );
+    QVERIFY( sink.m_DiscoveredImageSets.count == 42 );
 }
 
 QTEST_APPLESS_MAIN(SISLibraryTest);
