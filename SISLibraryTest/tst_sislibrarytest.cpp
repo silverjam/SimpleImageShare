@@ -13,7 +13,8 @@ public:
     SISLibraryTest();
 
 private Q_SLOTS:
-    void testSerialization();
+    void testProtoVersion();
+    void testDiscoverImageSets();
 };
 
 SISLibraryTest::SISLibraryTest()
@@ -53,7 +54,7 @@ public:
     }
 };
 
-void SISLibraryTest::testSerialization()
+void SISLibraryTest::testProtoVersion()
 {
     QBuffer buf;
     buf.open(QIODevice::ReadWrite);
@@ -71,10 +72,36 @@ void SISLibraryTest::testSerialization()
     QDataStream ds2(&buf);
 
     SisCommands cmds2(ds2, &sink);
-    QVERIFY( cmds2.parse_ProtocolVersion() );
+    QVERIFY( cmds2.parseOne() );
 
     QVERIFY( sink.m_b_handle_ProtocolVersion );
     QVERIFY( ! sink.nothingCalled() );
+}
+
+void SISLibraryTest::testDiscoverImageSets()
+{
+    QBuffer buf;
+    buf.open(QIODevice::ReadWrite);
+
+    TestCommanSink sink;
+
+    QDataStream ds1(&buf);
+
+    SisCommands cmds1(ds1, &sink);
+    cmds1.build_DiscoverImageSets(42);
+
+    QVERIFY( sink.nothingCalled() );
+
+    buf.seek(0);
+    QDataStream ds2(&buf);
+
+    SisCommands cmds2(ds2, &sink);
+    QVERIFY( cmds2.parseOne() );
+
+    QVERIFY( sink.m_b_handle_DiscoverImageSets );
+    QVERIFY( ! sink.nothingCalled() );
+
+    QVERIFY( sink.m_DiscoverImageSets.count == 42 );
 }
 
 QTEST_APPLESS_MAIN(SISLibraryTest);

@@ -23,7 +23,12 @@ else:release {
     UI_DIR = ../build/release
 }
 
-LIBS += $${DESTDIR}/SISLibrary.lib
+win32 {
+    LIBS += $${DESTDIR}/SISLibrary.lib
+}
+else {
+    LIBS += $${DESTDIR}/libSISLibrary.a
+}
 
 INCLUDEPATH += ../SISLibrary
 

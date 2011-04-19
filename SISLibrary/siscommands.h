@@ -17,17 +17,14 @@ public:
         COMMAND_DISCOVER_IMAGE_SETS,
     };
 
-    enum CommandVersions {
-        VERSION_DISCOVER = 1,
-        VERSION_VERSION = 1,
-    };
-
     SisCommands(QDataStream&, ICommandSink*);
+
+    bool parseOne();
 
     void build_ProtocolVersion();
     bool parse_ProtocolVersion();
 
-    void build_DiscoverImageSets();
+    void build_DiscoverImageSets(int count);
     bool parse_DiscoverImageSets();
 
 private:

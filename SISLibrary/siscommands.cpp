@@ -10,12 +10,27 @@ SisCommands::SisCommands(QDataStream& dataStream, ICommandSink* pSink) :
 }
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+bool
+SisCommands::parseOne()
+{
+    int command;
+    m_dataStream >> command;
+
+    switch(command) {
+    case COMMAND_PROTO_VERSION:
+        return parse_ProtocolVersion();
+    case COMMAND_DISCOVER_IMAGE_SETS:
+        return parse_DiscoverImageSets();
+    }
+
+    return false;
+}
+
+// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 void
 SisCommands::build_ProtocolVersion()
 {
-    m_dataStream << COMMAND_MARKER;
     m_dataStream << COMMAND_PROTO_VERSION;
-    m_dataStream << VERSION_VERSION;
     m_dataStream << 1;
 }
 
@@ -24,28 +39,6 @@ bool
 SisCommands::parse_ProtocolVersion()
 {
     ProtocolVersion info;
-
-    int marker;
-    m_dataStream >> marker;
-
-    if ( marker != COMMAND_MARKER )
-        qWarning("Marker didn't match: %1", marker);
-
-    int command;
-    m_dataStream >> command;
-
-    if ( command != COMMAND_PROTO_VERSION )
-        return false;
-
-    int version;
-    m_dataStream >> version;
-
-    if ( VERSION_VERSION != version )
-    {
-        qWarning("Version didn't match: %1", version);
-        return false;
-    }
-
     m_dataStream >> info.version;
 
     m_pSink->handle_ProtocolVersion(info);
@@ -55,16 +48,20 @@ SisCommands::parse_ProtocolVersion()
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 void
-SisCommands::build_DiscoverImageSets()
+SisCommands::build_DiscoverImageSets(int count)
 {
-    m_dataStream << COMMAND_MARKER;
     m_dataStream << COMMAND_DISCOVER_IMAGE_SETS;
-    m_dataStream << VERSION_DISCOVER;
+    m_dataStream << count;
 }
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 bool
 SisCommands::parse_DiscoverImageSets()
 {
-    return false;
+    DiscoverImageSets info;
+    m_dataStream >> info.count;
+
+    m_pSink->handle_DiscoverImageSets(info);
+
+    return true;
 }
