@@ -3,7 +3,7 @@
 
 namespace CommandInformation
 {
-    struct DiscoverImageSets
+    struct DiscoveredImageSets
     {
         int count;
     };
@@ -17,7 +17,7 @@ namespace CommandInformation
 class ICommandSink
 {
 public:
-    virtual void handle_DiscoverImageSets(const CommandInformation::DiscoverImageSets&) = 0;
+    virtual void handle_DiscoveredImageSets(const CommandInformation::DiscoveredImageSets&) = 0;
     virtual void handle_ProtocolVersion(const CommandInformation::ProtocolVersion&) = 0;
 };
 
