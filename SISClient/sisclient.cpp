@@ -1,6 +1,8 @@
 #include "sisclient.h"
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-SISClient::SISClient()
+SISClient::SISClient(const QString& address, int port)
 {
+    QTcpSocket* pSocket = new QTcpSocket(this);
+    //pSocket->connectToHost();
 }

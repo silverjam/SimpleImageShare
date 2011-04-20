@@ -3,7 +3,11 @@
 
 #include <QtNetwork>
 
-class SISClient {
+class SISClient
+    : QObject
+{
+    Q_OBJECT
+
 public:
     SISClient(const QString& address, int port);
 };
