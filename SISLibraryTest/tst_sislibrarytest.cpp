@@ -2,9 +2,11 @@
 #include <QtTest/QtTest>
 
 #include "sislibrary.h"
+#include "sisserverlibrary.h"
 
 using namespace CommandInformation;
 
+// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 class SISLibraryTest : public QObject
 {
     Q_OBJECT
@@ -15,12 +17,15 @@ public:
 private Q_SLOTS:
     void testProtoVersion();
     void testDiscoveredImageSets();
+    void testServer();
 };
 
+// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 SISLibraryTest::SISLibraryTest()
 {
 }
 
+// **************************************************************************
 class TestCommanSink : public ICommandSink
 {
 public:
@@ -54,7 +59,9 @@ public:
     }
 };
 
-void SISLibraryTest::testProtoVersion()
+// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+void
+SISLibraryTest::testProtoVersion()
 {
     QBuffer buf;
     buf.open(QIODevice::ReadWrite);
@@ -78,7 +85,9 @@ void SISLibraryTest::testProtoVersion()
     QVERIFY( ! sink.nothingCalled() );
 }
 
-void SISLibraryTest::testDiscoveredImageSets()
+// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+void
+SISLibraryTest::testDiscoveredImageSets()
 {
     QBuffer buf;
     buf.open(QIODevice::ReadWrite);
@@ -102,6 +111,14 @@ void SISLibraryTest::testDiscoveredImageSets()
     QVERIFY( ! sink.nothingCalled() );
 
     QVERIFY( sink.m_DiscoveredImageSets.count == 42 );
+}
+
+// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+void
+SISLibraryTest::testServer()
+{
+    Server server(QHostAddress::LocalHost);
+
 }
 
 QTEST_APPLESS_MAIN(SISLibraryTest);

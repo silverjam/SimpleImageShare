@@ -10,27 +10,29 @@ QT       -= gui
 
 debug {
     DESTDIR = ../bin/debug
-    OBJECTS_DIR = ../build/debug
-    MOC_DIR = ../build/debug
-    RCC_DIR = ../build/debug
-    UI_DIR = ../build/debug
+    OBJECTS_DIR = ../build/debug/$${TARGET}
+    MOC_DIR = ../build/debug/$${TARGET}
+    RCC_DIR = ../build/debug/$${TARGET}
+    UI_DIR = ../build/debug/$${TARGET}
 }
 else:release {
     DESTDIR = ../bin/release
-    OBJECTS_DIR = ../build/release
-    MOC_DIR = ../build/release
-    RCC_DIR = ../build/release
-    UI_DIR = ../build/release
+    OBJECTS_DIR = ../build/release/$${TARGET}
+    MOC_DIR = ../build/release/$${TARGET}
+    RCC_DIR = ../build/release/$${TARGET}
+    UI_DIR = ../build/release/$${TARGET}
 }
 
 win32 {
-    LIBS += $${DESTDIR}/SISLibrary.lib
+    LIBS += $${DESTDIR}/SISLibrary.lib $${DESTDIR}/SISServerLibrary.lib
 }
 else {
-    LIBS += $${DESTDIR}/libSISLibrary.a
+    LIBS += $${DESTDIR}/libSISLibrary.a $${DESTDIR}/libSISServerLibrary.a
 }
 
-INCLUDEPATH += ../SISLibrary
+INCLUDEPATH += \
+    ../SISLibrary \
+    ../SISServerLibrary \
 
 TARGET = tst_sislibrarytest
 CONFIG   += console

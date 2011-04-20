@@ -1,9 +1,33 @@
 TEMPLATE = subdirs
 
-CONFIG += ordered
+SUBDIRS += \
+    SISLibrary \
+    SISServerLibrary \
+    SISLibraryTest \
+    SISServer \
+    SISClient \
+    SIS \
 
-SUBDIRS += SISLibrary
-SUBDIRS += SISLibraryTest
-SUBDIRS += SISServer
-SUBDIRS += SISClient
-SUBDIRS += SIS
+SISLibraryTest.depends += \
+    SISLibrary \
+    SISServerLibrary \
+
+SISServerLibrary.depends += \
+    SISLibrary \
+
+SISServer.depends += \
+    SISLibraryTest \
+    SISLibrary \
+    SISServerLibrary \
+
+SISClient.depends += \
+    SISLibraryTest \
+    SISLibrary \
+    SISServerLibrary \
+
+SIS.depends += \
+    SISClient \
+    SISLibraryTest \
+    SISLibrary \
+    SISClient \
+    SISServerLibrary \

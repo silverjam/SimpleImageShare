@@ -1,6 +1,6 @@
 #-------------------------------------------------
 #
-# Project created by QtCreator 2011-04-18T11:43:18
+# Project created by QtCreator 2011-04-20T13:16:21
 #
 #-------------------------------------------------
 
@@ -23,16 +23,36 @@ else:release {
     UI_DIR = ../build/release/$${TARGET}
 }
 
-TARGET = SISLibrary
+TARGET = SISServerLibrary
+
 TEMPLATE = lib
 CONFIG += staticlib
 
-SOURCES += sislibrary.cpp \
-    siscommands.cpp
+DEFINES += SISSERVERLIBRARY_LIBRARY
 
-HEADERS += sislibrary.h \
-    siscommands.h \
-    icommandsink.h
+SOURCES += \
+    sisserverlibrary.cpp \
+    server.cpp \
+
+HEADERS += \
+    sisserverlibrary.h \
+    SISServerLibrary_global.h \
+    server.h \
+
+INCLUDEPATH += \
+    ../SISLibrary \
+
+symbian {
+    #Symbian specific definitions
+    MMP_RULES += EXPORTUNFROZEN
+    TARGET.UID3 = 0xE3B96899
+    TARGET.CAPABILITY = 
+    TARGET.EPOCALLOWDLLDATA = 1
+    addFiles.sources = SISServerLibrary.dll
+    addFiles.path = !:/sys/bin
+    DEPLOYMENT += addFiles
+}
+
 unix:!symbian {
     maemo5 {
         target.path = /opt/usr/lib

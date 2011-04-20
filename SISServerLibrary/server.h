@@ -10,7 +10,9 @@ class Server : public QObject, public ICommandSink
 {
     Q_OBJECT
 public:
-    explicit Server(QObject *parent = 0);
+    explicit Server(QHostAddress address = QHostAddress::Any, int port = 11507, QObject *parent = 0);
+
+    int port() const;
 
 signals:
 
@@ -19,6 +21,10 @@ public slots:
     void handleData(QObject*);
 
 private:
+    inline virtual void handle_ProtocolVersion(const CommandInformation::ProtocolVersion&) { }
+    inline virtual void handle_DiscoveredImageSets(const CommandInformation::DiscoveredImageSets&) { }
+
+
     QTcpServer* m_pServer;
     QSignalMapper* m_pSigMap;
 };

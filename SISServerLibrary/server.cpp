@@ -1,16 +1,25 @@
 #include "server.h"
 
-Server::Server(QObject *parent) :
+// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Server::Server(QHostAddress address/* = QHostAddress::Any*/, int port/* = 11507*/, QObject *parent/* = 0*/) :
     QObject(parent)
 {
     m_pServer = new QTcpServer(this);
-    m_pServer->listen(QHostAddress::Any, 11507);
+    m_pServer->listen(address, port);
 
     m_pSigMap = new QSignalMapper(this);
 
     connect(m_pServer, SIGNAL(newConnection()), this, SLOT(handleConnection()));
 }
 
+// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+int
+Server::port() const
+{
+    return m_pServer->serverPort();
+}
+
+// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 void
 Server::handleConnection()
 {
@@ -23,6 +32,7 @@ Server::handleConnection()
     connect(m_pSigMap, SIGNAL(mapped(QObject*)), this, SLOT(handleData(QObject*)));
 }
 
+// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 void
 Server::handleData(QObject* pObject)
 {
