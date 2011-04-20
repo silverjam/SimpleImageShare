@@ -15,6 +15,7 @@ void
 Server::handleConnection()
 {
     QTcpSocket* pSocket = m_pServer->nextPendingConnection();
+
     connect(pSocket, SIGNAL(readyRead()), m_pSigMap, SLOT(map(QObject*)));
 
     m_pSigMap->setMapping(pSocket, pSocket);
@@ -32,5 +33,6 @@ Server::handleData(QObject* pObject)
         return;
     }
 
-    QByteArray data = pSocket->readAll();
+    SisCommands commands((QDataStream&)*(QDataStream*)(void*)0, (ICommandSink*)this, (QObject*)this);
+    commands.parseOne();
 }

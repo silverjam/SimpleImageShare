@@ -5,19 +5,15 @@
 
 #include "icommandsink.h"
 
-class SisCommands
+class SisCommands : QObject
 {
 public:
-    enum CommandMarker {
-        COMMAND_MARKER = 310953829,
-    };
-
     enum CommandCodes {
         COMMAND_PROTO_VERSION = 42,
-        COMMAND_DISCOVER_IMAGE_SETS,
+        COMMAND_DISCOVER_IMAGE_SETS
     };
 
-    SisCommands(QDataStream&, ICommandSink*);
+    SisCommands(QDataStream&, ICommandSink*, QObject* = 0);
 
     bool parseOne();
 

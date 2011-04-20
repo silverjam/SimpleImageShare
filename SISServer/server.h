@@ -4,7 +4,9 @@
 #include <QObject>
 #include <QtNetwork>
 
-class Server : public QObject
+#include "sislibrary.h"
+
+class Server : public QObject, public ICommandSink
 {
     Q_OBJECT
 public:

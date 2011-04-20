@@ -24,7 +24,14 @@ else:release {
     UI_DIR = ../build/release
 }
 
-#LIBS += SISLibrary
+win32 {
+    LIBS += $${DESTDIR}/SISLibrary.lib
+}
+else {
+    LIBS += $${DESTDIR}/libSISLibrary.a
+}
+
+INCLUDEPATH += ../SISLibrary
 
 TARGET = SISServer
 CONFIG   += console

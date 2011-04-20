@@ -3,9 +3,10 @@
 using namespace CommandInformation;
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-SisCommands::SisCommands(QDataStream& dataStream, ICommandSink* pSink) :
-    m_dataStream(dataStream),
-    m_pSink(pSink)
+SisCommands::SisCommands(QDataStream& dataStream, ICommandSink* pSink, QObject* parent/* = 0*/)
+    : QObject(parent)
+    , m_dataStream(dataStream)
+    , m_pSink(pSink)
 {
 }
 
