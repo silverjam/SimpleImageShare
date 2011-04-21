@@ -43,6 +43,8 @@ Server::handleData(QObject* pObject)
         return;
     }
 
-    SisCommands commands((QDataStream&)*(QDataStream*)(void*)0, (ICommandSink*)this, (QObject*)this);
-    commands.parseOne();
+    SisCommandParser commands((ICommandSink*)this, (QObject*)this);
+
+    QDataStream ds;
+    commands.parseOne(ds, 1);
 }

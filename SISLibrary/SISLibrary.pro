@@ -28,11 +28,13 @@ TEMPLATE = lib
 CONFIG += staticlib
 
 SOURCES += sislibrary.cpp \
-    siscommands.cpp
+    siscommands.cpp \
+    commanddata.cpp
 
 HEADERS += sislibrary.h \
     siscommands.h \
-    icommandsink.h
+    icommandsink.h \
+    commanddata.h
 unix:!symbian {
     maemo5 {
         target.path = /opt/usr/lib

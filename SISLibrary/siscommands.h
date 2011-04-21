@@ -1,31 +1,35 @@
 #ifndef SISCOMMANDS_H
 #define SISCOMMANDS_H
 
-#include <QDataStream>
+#include <QtNetwork>
 
 #include "icommandsink.h"
 
-class SisCommands : QObject
+enum { CURRENT_PROTOCOL_VERSION = 20110418 };
+
+class SisCommandParser : QObject
 {
 public:
-    enum CommandCodes {
-        COMMAND_PROTO_VERSION = 42,
-        COMMAND_DISCOVERED_IMAGE_SETS
-    };
+    SisCommandParser(ICommandSink*, QObject* = 0);
 
-    SisCommands(QDataStream&, ICommandSink*, QObject* = 0);
+    qint64 discoverSize(quint32 command);
+    bool parseOne(QDataStream&, quint32 command);
 
-    bool parseOne();
+    qint64 headerSize();
+    quint32 readHeader(QDataStream& ds);
 
-    void build_ProtocolVersion();
-    bool parse_ProtocolVersion();
-
-    void build_DiscoveredImageSets(int count);
-    bool parse_DiscoveredImageSets();
+    bool parse_ProtocolVersion(QDataStream& ds);
+    bool parse_DiscoveredImageSets(QDataStream& ds);
 
 private:
-    QDataStream& m_dataStream;
     ICommandSink* m_pSink;
+};
+
+class SisCommandBuilder
+{
+public:
+    static void build_ProtocolVersion(QDataStream&);
+    static void build_DiscoveredImageSets(QDataStream&, int count);
 };
 
 #endif // SISCOMMANDS_H

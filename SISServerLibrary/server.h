@@ -21,9 +21,8 @@ public slots:
     void handleData(QObject*);
 
 private:
-    inline virtual void handle_ProtocolVersion(const CommandInformation::ProtocolVersion&) { }
-    inline virtual void handle_DiscoveredImageSets(const CommandInformation::DiscoveredImageSets&) { }
-
+    inline virtual void handle_ProtocolVersion(quint32) { }
+    inline virtual void handle_DiscoveredImageSets(quint32) { }
 
     QTcpServer* m_pServer;
     QSignalMapper* m_pSigMap;

@@ -1,27 +1,58 @@
 #include "siscommands.h"
+#include "commanddata.h"
 
-using namespace CommandInformation;
+enum CommandCodes {
+    COMMAND_PROTO_VERSION = 42,
+    COMMAND_DISCOVERED_IMAGE_SETS
+};
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-SisCommands::SisCommands(QDataStream& dataStream, ICommandSink* pSink, QObject* parent/* = 0*/)
+SisCommandParser::SisCommandParser(ICommandSink* pSink, QObject* parent/* = 0*/)
     : QObject(parent)
-    , m_dataStream(dataStream)
     , m_pSink(pSink)
 {
 }
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-bool
-SisCommands::parseOne()
+qint64
+SisCommandParser::discoverSize(quint32 command)
 {
-    int command;
-    m_dataStream >> command;
-
     switch(command) {
     case COMMAND_PROTO_VERSION:
-        return parse_ProtocolVersion();
+        return ProtocolVersion::size();
     case COMMAND_DISCOVERED_IMAGE_SETS:
-        return parse_DiscoveredImageSets();
+        return DiscoveredImageSets::size();
+    }
+
+    return -1;
+}
+
+// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+qint64
+SisCommandParser::headerSize()
+{
+    return sizeof(quint32);
+}
+
+// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+quint32
+SisCommandParser::readHeader(QDataStream& ds)
+{
+    quint32 header;
+    ds >> header;
+
+    return header;
+}
+
+// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+bool
+SisCommandParser::parseOne(QDataStream& ds, quint32 command)
+{
+    switch(command) {
+    case COMMAND_PROTO_VERSION:
+        return parse_ProtocolVersion(ds);
+    case COMMAND_DISCOVERED_IMAGE_SETS:
+        return parse_DiscoveredImageSets(ds);
     }
 
     return false;
@@ -29,40 +60,46 @@ SisCommands::parseOne()
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 void
-SisCommands::build_ProtocolVersion()
+SisCommandBuilder::build_ProtocolVersion(QDataStream& ds)
 {
-    m_dataStream << COMMAND_PROTO_VERSION;
-    m_dataStream << 1;
+    ProtocolVersion data;
+    data.version = CURRENT_PROTOCOL_VERSION;
+
+    ds << COMMAND_PROTO_VERSION;
+    ds << data;
 }
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 bool
-SisCommands::parse_ProtocolVersion()
+SisCommandParser::parse_ProtocolVersion(QDataStream& ds)
 {
     ProtocolVersion info;
-    m_dataStream >> info.version;
+    ds >> info;
 
-    m_pSink->handle_ProtocolVersion(info);
+    m_pSink->handle_ProtocolVersion(info.version);
 
     return true;
 }
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 void
-SisCommands::build_DiscoveredImageSets(int count)
+SisCommandBuilder::build_DiscoveredImageSets(QDataStream& ds, int count)
 {
-    m_dataStream << COMMAND_DISCOVERED_IMAGE_SETS;
-    m_dataStream << count;
+    DiscoveredImageSets data;
+    data.count = count;
+
+    ds << COMMAND_DISCOVERED_IMAGE_SETS;
+    ds << data;
 }
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 bool
-SisCommands::parse_DiscoveredImageSets()
+SisCommandParser::parse_DiscoveredImageSets(QDataStream& ds)
 {
-    DiscoveredImageSets info;
-    m_dataStream >> info.count;
+    DiscoveredImageSets data;
+    ds >> data;
 
-    m_pSink->handle_DiscoveredImageSets(info);
+    m_pSink->handle_DiscoveredImageSets(data.count);
 
     return true;
 }
