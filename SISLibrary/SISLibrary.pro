@@ -29,12 +29,17 @@ CONFIG += staticlib
 
 SOURCES += sislibrary.cpp \
     siscommands.cpp \
-    commanddata.cpp
+    commanddata.cpp \
+    datapool.cpp
 
 HEADERS += sislibrary.h \
     siscommands.h \
     icommandsink.h \
-    commanddata.h
+    commanddata.h \
+    datapool.h \
+    idatapoolsink.h
+
+
 unix:!symbian {
     maemo5 {
         target.path = /opt/usr/lib

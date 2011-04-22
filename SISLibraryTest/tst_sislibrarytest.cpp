@@ -4,6 +4,8 @@
 #include "sislibrary.h"
 #include "sisserverlibrary.h"
 
+#include <algorithm>
+
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 class SISLibraryTest : public QObject
 {
@@ -16,6 +18,7 @@ private Q_SLOTS:
     void testProtoVersion();
     void testDiscoveredImageSets();
     void testServer();
+    void testDataPool();
 };
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -83,34 +86,39 @@ SISLibraryTest::testProtoVersion()
 
     QVERIFY( sink.m_b_handle_ProtocolVersion );
     QVERIFY( ! sink.nothingCalled() );
+
+    QVERIFY( sink.m_uProtocolVersion == CURRENT_PROTOCOL_VERSION );
 }
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 void
 SISLibraryTest::testDiscoveredImageSets()
 {
-//    QBuffer buf;
-//    buf.open(QIODevice::ReadWrite);
+    QBuffer buf;
+    buf.open(QIODevice::ReadWrite);
 
-//    TestCommanSink sink;
+    TestCommanSink sink;
 
-//    QDataStream ds1(&buf);
+    QDataStream ds1(&buf);
 
-//    SisCommands cmds1(ds1, &sink);
-//    cmds1.build_DiscoveredImageSets(42);
+    SisCommandBuilder::build_DiscoveredImageSets(ds1, 42);
 
-//    QVERIFY( sink.nothingCalled() );
+    buf.seek(0);
+    QDataStream ds2(&buf);
 
-//    buf.seek(0);
-//    QDataStream ds2(&buf);
+    SisCommandParser cmds2(&sink);
+    QVERIFY( cmds2.headerSize() <= buf.size() );
 
-//    SisCommands cmds2(ds2, &sink);
-//    QVERIFY( cmds2.parseOne() );
+    quint32 commandId = cmds2.readHeader(ds2);
+    qint64 commandSize = cmds2.discoverSize(commandId);
 
-//    QVERIFY( sink.m_b_handle_DiscoveredImageSets );
-//    QVERIFY( ! sink.nothingCalled() );
+    QVERIFY( commandSize <= (buf.size() - buf.pos()) );
+    QVERIFY( cmds2.parseOne(ds2, commandId) );
 
-//    QVERIFY( sink.m_DiscoveredImageSets.count == 42 );
+    QVERIFY( sink.m_b_handle_DiscoveredImageSets );
+    QVERIFY( ! sink.nothingCalled() );
+
+    QVERIFY( sink.m_uDiscoveredImageSets == 42 );
 }
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -119,6 +127,43 @@ SISLibraryTest::testServer()
 {
     //Server server(QHostAddress::LocalHost);
 
+}
+
+// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+void
+SISLibraryTest::testDataPool()
+{
+    DataPool pool;
+    pool.setChunkSize(4);
+
+    QBuffer buffer;
+    QVERIFY( buffer.open(QIODevice::ReadWrite) );
+
+    QDataStream ds(&buffer);
+
+    SisCommandBuilder::build_DiscoveredImageSets(ds, 102);
+
+    pool.poolNewData(buffer.data().data(), 2);
+    QVERIFY( ! pool.isDataReady() );
+
+    pool.poolNewData(buffer.data().data() + 2, 2);
+
+    QVERIFY( pool.isDataReady() );
+
+    QByteArray bytes;
+    QVERIFY( pool.readPooledChunk(bytes) );
+
+    QVERIFY( bytes.size() == 4 );
+    QVERIFY( memcmp(bytes.data(), buffer.data(), bytes.size()) == 0 );
+
+    pool.poolNewData(buffer.data().data() + 4, 2);
+
+    QVERIFY( ! pool.readPooledChunk(bytes) );
+
+    pool.poolNewData(buffer.data().data() + 6, 2);
+
+    QVERIFY( pool.readPooledChunk(bytes) );
+    QVERIFY( bytes.size() == 4 );
 }
 
 QTEST_APPLESS_MAIN(SISLibraryTest);

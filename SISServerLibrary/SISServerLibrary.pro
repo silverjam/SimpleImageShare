@@ -36,7 +36,6 @@ SOURCES += \
 
 HEADERS += \
     sisserverlibrary.h \
-    SISServerLibrary_global.h \
     server.h \
 
 INCLUDEPATH += \

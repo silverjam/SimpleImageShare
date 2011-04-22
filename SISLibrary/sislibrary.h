@@ -3,5 +3,6 @@
 
 #include "icommandsink.h"
 #include "siscommands.h"
+#include "datapool.h"
 
 #endif // SISLIBRARY_H
