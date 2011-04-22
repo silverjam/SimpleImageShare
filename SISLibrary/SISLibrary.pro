@@ -36,8 +36,7 @@ HEADERS += sislibrary.h \
     siscommands.h \
     icommandsink.h \
     commanddata.h \
-    datapool.h \
-    idatapoolsink.h
+    datapool.h
 
 
 unix:!symbian {
