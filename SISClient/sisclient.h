@@ -3,15 +3,19 @@
 
 #include <QtNetwork>
 
-class SISClient
-    : QObject
+#include "sislibrary.h"
+
+class ICommandSink;
+
+class SisClient : public SisCommandBuilder
 {
     Q_OBJECT
 
 public:
-    SISClient(const QString& address, quint16 port);
+    SisClient(const QString& address, quint16 port, ICommandSink*);
 
     void connectToHost();
+    void send(const QBuffer& ds);
 
 private slots:
     void handleData();
@@ -19,6 +23,7 @@ private slots:
 private:
     QString m_host;
     quint16 m_port;
+    ICommandSink* m_pSink;
     QTcpSocket* m_pSocket;
 };
 

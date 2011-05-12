@@ -24,14 +24,15 @@ else:release {
 }
 
 win32 {
-    LIBS += $${DESTDIR}/SISLibrary.lib $${DESTDIR}/SISServerLibrary.lib
+    LIBS += $${DESTDIR}/SISLibrary.lib $${DESTDIR}/SISServerLibrary.lib $${DESTDIR}/SISClient.lib
 }
 else {
-    LIBS += $${DESTDIR}/libSISLibrary.a $${DESTDIR}/libSISServerLibrary.a
+    LIBS += $${DESTDIR}/libSISLibrary.a $${DESTDIR}/libSISServerLibrary.a $${DESTDIR}/libSISClient.a
 }
 
 INCLUDEPATH += \
     ../SISLibrary \
+    ../SISClient \
     ../SISServerLibrary \
 
 TARGET = tst_sislibrarytest

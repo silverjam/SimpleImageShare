@@ -76,7 +76,7 @@ SisCommandParser::parse_ProtocolVersion(QDataStream& ds)
     ProtocolVersion info;
     ds >> info;
 
-    m_pSink->handle_ProtocolVersion(info.version);
+    m_pSink->incoming_ProtocolVersion(info.version);
 
     return true;
 }
@@ -99,7 +99,7 @@ SisCommandParser::parse_DiscoveredImageSets(QDataStream& ds)
     DiscoveredImageSets data;
     ds >> data;
 
-    m_pSink->handle_DiscoveredImageSets(data.count);
+    m_pSink->incoming_DiscoverImageSets(data.count);
 
     return true;
 }

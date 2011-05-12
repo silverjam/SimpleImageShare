@@ -3,6 +3,7 @@
 
 #include "sislibrary.h"
 #include "sisserverlibrary.h"
+#include "sisclient.h"
 
 #include <algorithm>
 
@@ -37,7 +38,7 @@ public:
 
     quint32 m_uDiscoveredImageSets;
     bool m_b_handle_DiscoveredImageSets;
-    void handle_DiscoveredImageSets(int input)
+    void incoming_DiscoverImageSets(int input)
     {
         m_b_handle_DiscoveredImageSets = true;
         m_uDiscoveredImageSets = input;
@@ -45,7 +46,7 @@ public:
 
     quint32 m_uProtocolVersion;
     bool m_b_handle_ProtocolVersion;
-    void handle_ProtocolVersion(int input)
+    void incoming_ProtocolVersion(int input)
     {
         m_b_handle_ProtocolVersion = true;
         m_uProtocolVersion = input;
@@ -125,8 +126,16 @@ SISLibraryTest::testDiscoveredImageSets()
 void
 SISLibraryTest::testServer()
 {
-    //Server server(QHostAddress::LocalHost);
+    class Sink : public ICommandSink
+    {
+        virtual void incoming_DiscoverImageSets(int count) { }
+        virtual void incoming_ProtocolVersion(int version) { }
+    };
 
+    SisServer server(QHostAddress::LocalHost);
+
+    Sink sink;
+    SisClient client("127.0.0.1", server.port(), &sink);
 }
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

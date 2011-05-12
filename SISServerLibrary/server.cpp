@@ -1,7 +1,7 @@
 #include "server.h"
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Server::Server(QHostAddress address/* = QHostAddress::Any*/, int port/* = 11507*/, QObject *parent/* = 0*/) :
+SisServer::SisServer(QHostAddress address/* = QHostAddress::Any*/, int port/* = 11507*/, QObject *parent/* = 0*/) :
     QObject(parent)
 {
     m_pServer = new QTcpServer(this);
@@ -14,18 +14,18 @@ Server::Server(QHostAddress address/* = QHostAddress::Any*/, int port/* = 11507*
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 int
-Server::port() const
+SisServer::port() const
 {
     return m_pServer->serverPort();
 }
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 void
-Server::handleConnection()
+SisServer::handleConnection()
 {
     QTcpSocket* pSocket = m_pServer->nextPendingConnection();
 
-    connect(pSocket, SIGNAL(readyRead()), m_pSigMap, SLOT(map(QObject*)));
+    connect(pSocket, SIGNAL(readyRead()), m_pSigMap, SLOT(map()));
 
     m_pSigMap->setMapping(pSocket, pSocket);
 
@@ -34,7 +34,7 @@ Server::handleConnection()
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 void
-Server::handleData(QObject* pObject)
+SisServer::handleData(QObject* pObject)
 {
     QTcpSocket* pSocket = qobject_cast<QTcpSocket*>(pObject);
     if ( ! pSocket )

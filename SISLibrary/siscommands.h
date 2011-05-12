@@ -25,11 +25,32 @@ private:
     ICommandSink* m_pSink;
 };
 
-class SisCommandBuilder
+class SisCommandBuilder : public QObject
 {
 public:
     static void build_ProtocolVersion(QDataStream&);
     static void build_DiscoveredImageSets(QDataStream&, int count);
+
+    inline void setBuffer(QBuffer* pds) { m_pbuf = pds; }
+    inline QBuffer* buffer() { return m_pbuf; }
+
+    virtual void send(QBuffer*) = 0;
+
+    inline void prepareBuffer()
+    {
+        m_pbuf->seek(0);
+        m_pbuf->setData(0, 0);
+    }
+
+    inline void send_ProtocolVersion() {
+        prepareBuffer();
+        QDataStream ds(m_pbuf);
+        build_ProtocolVersion(ds);
+        send(m_pbuf);
+    }
+
+private:
+    QBuffer* m_pbuf;
 };
 
 #endif // SISCOMMANDS_H

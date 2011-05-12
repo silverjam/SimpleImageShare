@@ -6,11 +6,11 @@
 
 #include "sislibrary.h"
 
-class Server : public QObject, public ICommandSink
+class SisServer : public QObject, public ICommandSink
 {
     Q_OBJECT
 public:
-    explicit Server(QHostAddress address = QHostAddress::Any, int port = 11507, QObject *parent = 0);
+    explicit SisServer(QHostAddress address = QHostAddress::Any, int port = 11507, QObject *parent = 0);
 
     int port() const;
 
@@ -21,8 +21,8 @@ public slots:
     void handleData(QObject*);
 
 private:
-    inline virtual void handle_ProtocolVersion(quint32) { }
-    inline virtual void handle_DiscoveredImageSets(quint32) { }
+    inline virtual void incoming_ProtocolVersion(int) { }
+    inline virtual void incoming_DiscoverImageSets(int) { }
 
     QTcpServer* m_pServer;
     QSignalMapper* m_pSigMap;
