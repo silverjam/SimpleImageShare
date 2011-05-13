@@ -21,11 +21,14 @@ public slots:
     void handleData(QObject*);
 
 private:
-    inline virtual void incoming_ProtocolVersion(int) { }
-    inline virtual void incoming_DiscoverImageSets(int) { }
+    inline virtual void incoming_ProtocolVersion(int) { qDebug("proto version"); }
+    inline virtual void incoming_DiscoverImageSets(int) { qDebug("discover image sets"); }
 
     QTcpServer* m_pServer;
     QSignalMapper* m_pSigMap;
+
+    DataPool m_pool;
+    CommandCode m_command;
 };
 
 #endif // SERVER_H

@@ -5,6 +5,12 @@
 
 #include "icommandsink.h"
 
+enum CommandCode {
+    COMMAND_UNKNOWN = 0,
+    COMMAND_PROTO_VERSION = 42,
+    COMMAND_DISCOVERED_IMAGE_SETS,
+};
+
 enum { CURRENT_PROTOCOL_VERSION = 20110418 };
 
 class SisCommandParser : QObject
@@ -15,7 +21,7 @@ public:
     qint64 discoverSize(quint32 command);
     bool parseOne(QDataStream&, quint32 command);
 
-    qint64 headerSize();
+    static qint64 headerSize();
     quint32 readHeader(QDataStream& ds);
 
     bool parse_ProtocolVersion(QDataStream& ds);

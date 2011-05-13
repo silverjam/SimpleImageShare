@@ -1,13 +1,17 @@
 #include "server.h"
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-SisServer::SisServer(QHostAddress address/* = QHostAddress::Any*/, int port/* = 11507*/, QObject *parent/* = 0*/) :
-    QObject(parent)
+SisServer::SisServer(QHostAddress address/* = QHostAddress::Any*/, int port/* = 11507*/, QObject *parent/* = 0*/)
+    : QObject(parent)
+    , m_command(COMMAND_UNKNOWN)
 {
     m_pServer = new QTcpServer(this);
     m_pServer->listen(address, port);
 
     m_pSigMap = new QSignalMapper(this);
+
+    // Wait for header first
+    m_pool.setChunkSize(SisCommandParser::headerSize());
 
     connect(m_pServer, SIGNAL(newConnection()), this, SLOT(handleConnection()));
 }
@@ -43,8 +47,34 @@ SisServer::handleData(QObject* pObject)
         return;
     }
 
-    SisCommandParser commands((ICommandSink*)this, (QObject*)this);
+    // Need to move most of this logic to the command parser class and just
+    //  feed it the data and the parser sink.
 
-    QDataStream ds;
-    commands.parseOne(ds, 1);
+    QByteArray buffer;
+
+    SisCommandParser commands(this, this);
+    m_pool.poolNewData(pSocket->readAll());
+
+    if ( m_pool.isDataReady() && m_pool.chunkSize() == SisCommandParser::headerSize() )
+    {
+        m_pool.readPooledChunk(buffer);
+
+        QDataStream ds(buffer);
+        quint32 command = commands.readHeader(ds);
+
+        qint64 size = commands.discoverSize(command);
+
+        m_pool.setChunkSize(size);
+    }
+
+    if ( m_pool.isDataReady() )
+    {
+        QDataStream ds(buffer);
+        m_pool.readPooledChunk(buffer);
+
+        if ( ! commands.parseOne(ds, m_command) )
+        {
+            qDebug("Failed to parse protocol buffer");
+        }
+    }
 }

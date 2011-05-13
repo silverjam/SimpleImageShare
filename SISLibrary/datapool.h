@@ -13,6 +13,7 @@ public:
     void poolNewData(const char*, qint64);
 
     void setChunkSize(qint64);
+    inline qint64 chunkSize() { return m_chunkSize; }
 
     bool isDataReady() const;
 

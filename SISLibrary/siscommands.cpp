@@ -1,11 +1,6 @@
 #include "siscommands.h"
 #include "commanddata.h"
 
-enum CommandCodes {
-    COMMAND_PROTO_VERSION = 42,
-    COMMAND_DISCOVERED_IMAGE_SETS
-};
-
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 SisCommandParser::SisCommandParser(ICommandSink* pSink, QObject* parent/* = 0*/)
     : QObject(parent)
