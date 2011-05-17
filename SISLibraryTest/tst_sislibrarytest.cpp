@@ -126,6 +126,11 @@ SISLibraryTest::testDiscoveredImageSets()
 void
 SISLibraryTest::testServer()
 {
+    int argc = 1;
+    char* argv[] = { "test" };
+
+    QCoreApplication app(argc, argv);
+
     class Sink : public ICommandSink
     {
         virtual void incoming_DiscoverImageSets(int count) { }
@@ -136,6 +141,18 @@ SISLibraryTest::testServer()
 
     Sink sink;
     SisClient client("127.0.0.1", server.port(), &sink);
+
+    client.connectToHost();
+
+    QEventLoop loop;
+    QObject::connect(&client, SIGNAL(connected()), &loop, SLOT(quit()));
+
+    loop.exec();
+
+    client.send_ProtocolVersion();
+
+    QObject::connect(&server, SIGNAL(dataProcessed()), &loop, SLOT(quit()));
+    loop.exec();
 }
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

@@ -40,7 +40,7 @@ public:
     inline void setBuffer(QBuffer* pds) { m_pbuf = pds; }
     inline QBuffer* buffer() { return m_pbuf; }
 
-    virtual void send(QBuffer*) = 0;
+    virtual void send(const QBuffer&) = 0;
 
     inline void prepareBuffer()
     {
@@ -52,7 +52,7 @@ public:
         prepareBuffer();
         QDataStream ds(m_pbuf);
         build_ProtocolVersion(ds);
-        send(m_pbuf);
+        send(*m_pbuf);
     }
 
 private:

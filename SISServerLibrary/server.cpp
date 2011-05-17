@@ -6,7 +6,8 @@ SisServer::SisServer(QHostAddress address/* = QHostAddress::Any*/, int port/* = 
     , m_command(COMMAND_UNKNOWN)
 {
     m_pServer = new QTcpServer(this);
-    m_pServer->listen(address, port);
+    if ( ! m_pServer->listen(address, port) )
+        qDebug("(%s:%d) server failed to listen", __FILE__, __LINE__);
 
     m_pSigMap = new QSignalMapper(this);
 
@@ -77,4 +78,6 @@ SisServer::handleData(QObject* pObject)
             qDebug("Failed to parse protocol buffer");
         }
     }
+
+    emit dataProcessed();
 }

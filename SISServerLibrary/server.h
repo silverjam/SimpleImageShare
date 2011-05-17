@@ -15,6 +15,7 @@ public:
     int port() const;
 
 signals:
+    void dataProcessed();
 
 public slots:
     void handleConnection();

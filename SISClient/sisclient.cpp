@@ -7,6 +7,8 @@ SisClient::SisClient(const QString& address, quint16 port, ICommandSink* pSink)
     , m_pSink(pSink)
     , m_pSocket(0)
 {
+    m_buffer.open(QBuffer::ReadWrite);
+    setBuffer(&m_buffer);
 }
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -16,6 +18,7 @@ SisClient::connectToHost()
     m_pSocket = new QTcpSocket(this);
     m_pSocket->connectToHost(m_host, m_port);
 
+    connect(m_pSocket, SIGNAL(connected()), this, SIGNAL(connected()));
     connect(m_pSocket, SIGNAL(readyRead()), this, SLOT(handleData()));
 }
 

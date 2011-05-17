@@ -17,6 +17,9 @@ public:
     void connectToHost();
     void send(const QBuffer& ds);
 
+signals:
+    void connected();
+
 private slots:
     void handleData();
 
@@ -25,6 +28,7 @@ private:
     quint16 m_port;
     ICommandSink* m_pSink;
     QTcpSocket* m_pSocket;
+    QBuffer m_buffer;
 };
 
 #endif // SISCLIENT_H
