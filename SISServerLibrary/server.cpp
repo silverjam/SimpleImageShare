@@ -61,9 +61,9 @@ SisServer::handleData(QObject* pObject)
         m_pool.readPooledChunk(buffer);
 
         QDataStream ds(buffer);
-        quint32 command = commands.readHeader(ds);
+        m_command = commands.readHeader(ds);
 
-        qint64 size = commands.discoverSize(command);
+        qint64 size = commands.discoverSize(m_command);
 
         m_pool.setChunkSize(size);
     }

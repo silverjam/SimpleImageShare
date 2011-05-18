@@ -30,13 +30,13 @@ SisCommandParser::headerSize()
 }
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-quint32
+CommandCode
 SisCommandParser::readHeader(QDataStream& ds)
 {
     quint32 header;
     ds >> header;
 
-    return header;
+    return (CommandCode)header;
 }
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

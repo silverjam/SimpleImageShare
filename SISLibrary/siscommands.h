@@ -22,7 +22,7 @@ public:
     bool parseOne(QDataStream&, quint32 command);
 
     static qint64 headerSize();
-    quint32 readHeader(QDataStream& ds);
+    CommandCode readHeader(QDataStream& ds);
 
     bool parse_ProtocolVersion(QDataStream& ds);
     bool parse_DiscoveredImageSets(QDataStream& ds);
