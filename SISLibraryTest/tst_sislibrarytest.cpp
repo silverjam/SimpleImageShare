@@ -20,6 +20,7 @@ private Q_SLOTS:
     void testDiscoveredImageSets();
     void testServer();
     void testDataPool();
+    void testDataPool2();
 };
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -127,14 +128,17 @@ void
 SISLibraryTest::testServer()
 {
     int argc = 1;
-    char* argv[] = { "test" };
+    const char* argv[] = { "test" };
 
-    QCoreApplication app(argc, argv);
+    QCoreApplication app(argc, (char**)argv);
+    (void)app;
 
     class Sink : public ICommandSink
     {
-        virtual void incoming_DiscoverImageSets(int count) { }
-        virtual void incoming_ProtocolVersion(int version) { }
+        virtual void incoming_DiscoverImageSets(int) { }
+        virtual void incoming_ProtocolVersion(int version) {
+            QVERIFY( version == CURRENT_PROTOCOL_VERSION );
+        }
     };
 
     SisServer server(QHostAddress::LocalHost);
@@ -192,6 +196,37 @@ SISLibraryTest::testDataPool()
     QVERIFY( bytes.size() == 4 );
 }
 
-QTEST_APPLESS_MAIN(SISLibraryTest);
+// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+void
+SISLibraryTest::testDataPool2()
+{
+    char buf[] = { 1, 2, 3, 4};
+
+    DataPool pool;
+    pool.setChunkSize(sizeof(buf));
+
+    pool.poolNewData(buf, sizeof(buf));
+
+    QByteArray readBuffer;
+
+    QVERIFY( pool.readPooledChunk(readBuffer) );
+
+    QVERIFY( readBuffer.size() == sizeof(buf) );
+    QVERIFY( ::memcmp(readBuffer.data(), buf, sizeof(buf)) == 0 );
+
+    char buf2[] = { 5, 6, 7, 8, 9 };
+    pool.setChunkSize(sizeof(buf2));
+
+    pool.poolNewData(buf2, sizeof(buf2));
+
+    QByteArray readBuffer2;
+
+    QVERIFY( pool.readPooledChunk(readBuffer2) );
+    QVERIFY( readBuffer2.size() == sizeof(buf2) );
+
+    QVERIFY( ::memcmp(readBuffer2.data(), buf2, sizeof(buf2)) == 0 );
+}
+
+QTEST_APPLESS_MAIN(SISLibraryTest)
 
 #include "tst_sislibrarytest.moc"

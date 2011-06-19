@@ -70,6 +70,8 @@ SisServer::handleData(QObject* pObject)
 
     if ( m_pool.isDataReady() )
     {
+        buffer.clear();
+
         QDataStream ds(buffer);
         m_pool.readPooledChunk(buffer);
 
