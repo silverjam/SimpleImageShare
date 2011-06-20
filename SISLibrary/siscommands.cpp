@@ -2,10 +2,14 @@
 #include "commanddata.h"
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-SisCommandParser::SisCommandParser(ICommandSink* pSink, QObject* parent/* = 0*/)
+SisCommandParser::SisCommandParser(CommandSink* pSink, QObject* parent/* = 0*/)
     : QObject(parent)
     , m_pSink(pSink)
 {
+    m_pSink->setParent(this);
+
+    // Wait for header first
+    m_pool.setChunkSize(SisCommandParser::headerSize());
 }
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -40,6 +44,41 @@ SisCommandParser::readHeader(QDataStream& ds)
 }
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+void
+SisCommandParser::processData(const QByteArray& readBuffer)
+{
+    QByteArray buffer;
+    m_pool.poolNewData(readBuffer);
+
+    if (m_pool.isDataReady() && m_pool.chunkSize() == SisCommandParser::headerSize() )
+    {
+        m_pool.readPooledChunk(buffer);
+
+        QDataStream ds(buffer);
+        m_command = readHeader(ds);
+
+        qint64 size = discoverSize(m_command);
+
+        m_pool.setChunkSize(size);
+    }
+
+    if ( m_pool.isDataReady() )
+    {
+        buffer.clear();
+
+        m_pool.readPooledChunk(buffer);
+        QDataStream ds(buffer);
+
+        if ( ! parseOne(ds, m_command) )
+        {
+            qDebug("Failed to parse protocol buffer");
+        }
+    }
+
+    emit dataProcessed();
+}
+
+// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 bool
 SisCommandParser::parseOne(QDataStream& ds, quint32 command)
 {
@@ -71,7 +110,7 @@ SisCommandParser::parse_ProtocolVersion(QDataStream& ds)
     ProtocolVersion info;
     ds >> info;
 
-    m_pSink->incoming_ProtocolVersion(info.version);
+    m_pSink->emit_ProtocolVersion(info.version);
 
     return true;
 }
@@ -94,7 +133,7 @@ SisCommandParser::parse_DiscoveredImageSets(QDataStream& ds)
     DiscoveredImageSets data;
     ds >> data;
 
-    m_pSink->incoming_DiscoverImageSets(data.count);
+    m_pSink->emit_DiscoverImageSets(data.count);
 
     return true;
 }

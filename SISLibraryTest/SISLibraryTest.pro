@@ -41,7 +41,7 @@ CONFIG   -= app_bundle
 
 TEMPLATE = app
 
-QMAKE_POST_LINK = $${DESTDIR}/$${TARGET}
+#QMAKE_POST_LINK = $${DESTDIR}/$${TARGET}
 
 SOURCES += tst_sislibrarytest.cpp
 DEFINES += SRCDIR=\\\"$$PWD/\\\"

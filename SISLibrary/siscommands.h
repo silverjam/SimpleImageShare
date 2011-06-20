@@ -3,7 +3,8 @@
 
 #include <QtNetwork>
 
-#include "icommandsink.h"
+#include "commandsink.h"
+#include "datapool.h"
 
 enum CommandCode {
     COMMAND_UNKNOWN = 0,
@@ -13,10 +14,13 @@ enum CommandCode {
 
 enum { CURRENT_PROTOCOL_VERSION = 20110418 };
 
-class SisCommandParser : QObject
+class SisCommandParser : public QObject
 {
+    Q_OBJECT
+
 public:
-    SisCommandParser(ICommandSink*, QObject* = 0);
+    SisCommandParser(CommandSink*, QObject* = 0);
+    inline virtual ~SisCommandParser() { }
 
     qint64 discoverSize(quint32 command);
     bool parseOne(QDataStream&, quint32 command);
@@ -24,11 +28,19 @@ public:
     static qint64 headerSize();
     CommandCode readHeader(QDataStream& ds);
 
+    void processData(const QByteArray&);
+
     bool parse_ProtocolVersion(QDataStream& ds);
     bool parse_DiscoveredImageSets(QDataStream& ds);
 
+signals:
+    void dataProcessed();
+
 private:
-    ICommandSink* m_pSink;
+    DataPool m_pool;
+    CommandCode m_command;
+
+    CommandSink* m_pSink;
 };
 
 class SisCommandBuilder : public QObject
@@ -45,7 +57,9 @@ public:
     inline void prepareBuffer()
     {
         m_pbuf->seek(0);
+        m_pbuf->close();
         m_pbuf->setData(0, 0);
+        m_pbuf->open(QIODevice::ReadWrite);
     }
 
     inline void send_ProtocolVersion() {

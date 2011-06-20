@@ -30,13 +30,14 @@ CONFIG += staticlib
 SOURCES += sislibrary.cpp \
     siscommands.cpp \
     commanddata.cpp \
-    datapool.cpp
+    datapool.cpp \
+    commandsink.cpp
 
 HEADERS += sislibrary.h \
     siscommands.h \
-    icommandsink.h \
     commanddata.h \
-    datapool.h
+    datapool.h \
+    commandsink.h
 
 
 unix:!symbian {

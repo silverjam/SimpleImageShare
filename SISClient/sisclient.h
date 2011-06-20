@@ -5,14 +5,12 @@
 
 #include "sislibrary.h"
 
-class ICommandSink;
-
 class SisClient : public SisCommandBuilder
 {
     Q_OBJECT
 
 public:
-    SisClient(const QString& address, quint16 port, ICommandSink*);
+    SisClient(const QString& address, quint16 port, CommandSink*);
 
     void connectToHost();
     void send(const QBuffer& ds);
@@ -26,7 +24,7 @@ private slots:
 private:
     QString m_host;
     quint16 m_port;
-    ICommandSink* m_pSink;
+    CommandSink* m_pSink;
     QTcpSocket* m_pSocket;
     QBuffer m_buffer;
 };

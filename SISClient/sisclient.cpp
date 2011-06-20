@@ -1,7 +1,7 @@
 #include "sisclient.h"
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-SisClient::SisClient(const QString& address, quint16 port, ICommandSink* pSink)
+SisClient::SisClient(const QString& address, quint16 port, CommandSink* pSink)
     : m_host(address)
     , m_port(port)
     , m_pSink(pSink)

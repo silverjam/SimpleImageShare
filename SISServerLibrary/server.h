@@ -6,11 +6,11 @@
 
 #include "sislibrary.h"
 
-class SisServer : public QObject, public ICommandSink
+class SisServer : public QObject
 {
     Q_OBJECT
 public:
-    explicit SisServer(QHostAddress address = QHostAddress::Any, int port = 11507, QObject *parent = 0);
+    explicit SisServer(CommandSink* pSink, QHostAddress address = QHostAddress::Any, int port = 11507, QObject *parent = 0);
 
     int port() const;
 
@@ -28,8 +28,7 @@ private:
     QTcpServer* m_pServer;
     QSignalMapper* m_pSigMap;
 
-    DataPool m_pool;
-    CommandCode m_command;
+    SisCommandParser m_parser;
 };
 
 #endif // SERVER_H

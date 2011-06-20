@@ -29,30 +29,38 @@ SISLibraryTest::SISLibraryTest()
 }
 
 // **************************************************************************
-class TestCommanSink : public ICommandSink
+class TestCommanSink : public CommandSink
 {
+    Q_OBJECT
+
 public:
     TestCommanSink()
         : m_b_handle_DiscoveredImageSets(false)
         , m_b_handle_ProtocolVersion(false)
-    {}
+    {
+        connect(this, SIGNAL(incoming_ProtocolVersion(int)), this, SLOT(handle_ProtocolVersion(int)));
+        connect(this, SIGNAL(incoming_DiscoverImageSets(int)), this, SLOT(handle_DiscoverImageSets(int)));
+    }
 
     quint32 m_uDiscoveredImageSets;
     bool m_b_handle_DiscoveredImageSets;
-    void incoming_DiscoverImageSets(int input)
+    quint32 m_uProtocolVersion;
+    bool m_b_handle_ProtocolVersion;
+
+public slots:
+    void handle_DiscoverImageSets(int input)
     {
         m_b_handle_DiscoveredImageSets = true;
         m_uDiscoveredImageSets = input;
     }
 
-    quint32 m_uProtocolVersion;
-    bool m_b_handle_ProtocolVersion;
-    void incoming_ProtocolVersion(int input)
+    void handle_ProtocolVersion(int input)
     {
         m_b_handle_ProtocolVersion = true;
         m_uProtocolVersion = input;
     }
 
+public:
     bool nothingCalled()
     {
         return
@@ -69,7 +77,7 @@ SISLibraryTest::testProtoVersion()
     QBuffer buf;
     buf.open(QIODevice::ReadWrite);
 
-    TestCommanSink sink;
+    TestCommanSink* pSink = new TestCommanSink;
 
     QDataStream ds1(&buf);
     SisCommandBuilder::build_ProtocolVersion(ds1);
@@ -77,7 +85,7 @@ SISLibraryTest::testProtoVersion()
     buf.seek(0);
     QDataStream ds2(&buf);
 
-    SisCommandParser cmds2(&sink);
+    SisCommandParser cmds2(pSink);
     QVERIFY( cmds2.headerSize() <= buf.size() );
 
     quint32 commandId = cmds2.readHeader(ds2);
@@ -86,10 +94,10 @@ SISLibraryTest::testProtoVersion()
     QVERIFY( commandSize <= (buf.size() - buf.pos()) );
     QVERIFY( cmds2.parseOne(ds2, commandId) );
 
-    QVERIFY( sink.m_b_handle_ProtocolVersion );
-    QVERIFY( ! sink.nothingCalled() );
+    QVERIFY( pSink->m_b_handle_ProtocolVersion );
+    QVERIFY( ! pSink->nothingCalled() );
 
-    QVERIFY( sink.m_uProtocolVersion == CURRENT_PROTOCOL_VERSION );
+    QVERIFY( pSink->m_uProtocolVersion == CURRENT_PROTOCOL_VERSION );
 }
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -99,7 +107,7 @@ SISLibraryTest::testDiscoveredImageSets()
     QBuffer buf;
     buf.open(QIODevice::ReadWrite);
 
-    TestCommanSink sink;
+    TestCommanSink* pSink = new TestCommanSink;
 
     QDataStream ds1(&buf);
 
@@ -108,7 +116,7 @@ SISLibraryTest::testDiscoveredImageSets()
     buf.seek(0);
     QDataStream ds2(&buf);
 
-    SisCommandParser cmds2(&sink);
+    SisCommandParser cmds2(pSink);
     QVERIFY( cmds2.headerSize() <= buf.size() );
 
     quint32 commandId = cmds2.readHeader(ds2);
@@ -117,11 +125,32 @@ SISLibraryTest::testDiscoveredImageSets()
     QVERIFY( commandSize <= (buf.size() - buf.pos()) );
     QVERIFY( cmds2.parseOne(ds2, commandId) );
 
-    QVERIFY( sink.m_b_handle_DiscoveredImageSets );
-    QVERIFY( ! sink.nothingCalled() );
+    QVERIFY( pSink->m_b_handle_DiscoveredImageSets );
+    QVERIFY( ! pSink->nothingCalled() );
 
-    QVERIFY( sink.m_uDiscoveredImageSets == 42 );
+    QVERIFY( pSink->m_uDiscoveredImageSets == 42 );
 }
+
+// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+struct Sink : public CommandSink
+{
+    Q_OBJECT
+
+public slots:
+
+    void handle_ProtocolVersion(int version) {
+        bCalledProto = true;
+        QVERIFY( version == CURRENT_PROTOCOL_VERSION );
+    }
+
+public:
+    Sink() {
+        bCalledProto = false;
+        connect(this, SIGNAL(incoming_ProtocolVersion(int)), this, SLOT(handle_ProtocolVersion(int)));
+    }
+
+    bool bCalledProto;
+};
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 void
@@ -133,18 +162,11 @@ SISLibraryTest::testServer()
     QCoreApplication app(argc, (char**)argv);
     (void)app;
 
-    class Sink : public ICommandSink
-    {
-        virtual void incoming_DiscoverImageSets(int) { }
-        virtual void incoming_ProtocolVersion(int version) {
-            QVERIFY( version == CURRENT_PROTOCOL_VERSION );
-        }
-    };
+    Sink* pSinkServer(new Sink);
+    SisServer server(pSinkServer, QHostAddress::LocalHost);
 
-    SisServer server(QHostAddress::LocalHost);
-
-    Sink sink;
-    SisClient client("127.0.0.1", server.port(), &sink);
+    Sink* pSink(new Sink);
+    SisClient client("127.0.0.1", server.port(), pSink);
 
     client.connectToHost();
 
@@ -157,6 +179,8 @@ SISLibraryTest::testServer()
 
     QObject::connect(&server, SIGNAL(dataProcessed()), &loop, SLOT(quit()));
     loop.exec();
+
+    QVERIFY( pSinkServer->bCalledProto );
 }
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
