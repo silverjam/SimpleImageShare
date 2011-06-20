@@ -132,7 +132,7 @@ SISLibraryTest::testDiscoveredImageSets()
 }
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-struct Sink : public CommandSink
+struct TestServerSink : public CommandSink
 {
     Q_OBJECT
 
@@ -144,7 +144,7 @@ public slots:
     }
 
 public:
-    Sink() {
+    TestServerSink() {
         bCalledProto = false;
         connect(this, SIGNAL(incoming_ProtocolVersion(int)), this, SLOT(handle_ProtocolVersion(int)));
     }
@@ -162,11 +162,11 @@ SISLibraryTest::testServer()
     QCoreApplication app(argc, (char**)argv);
     (void)app;
 
-    Sink* pSinkServer(new Sink);
+    TestServerSink* pSinkServer(new TestServerSink);
     SisServer server(pSinkServer, QHostAddress::LocalHost);
 
-    Sink* pSink(new Sink);
-    SisClient client("127.0.0.1", server.port(), pSink);
+    TestServerSink* pSinkClient(new TestServerSink);
+    SisClient client("127.0.0.1", server.port(), pSinkClient);
 
     client.connectToHost();
 
@@ -175,12 +175,24 @@ SISLibraryTest::testServer()
 
     loop.exec();
 
-    client.send_ProtocolVersion();
+    client.send_ProtocolVersion(0);
 
-    QObject::connect(&server, SIGNAL(dataProcessed()), &loop, SLOT(quit()));
+    QVERIFY( QObject::connect(&server, SIGNAL(dataProcessed()), &loop, SLOT(quit())) );
     loop.exec();
 
+    QVERIFY( QObject::disconnect(&server, SIGNAL(dataProcessed()), &loop, SLOT(quit())) );
+
     QVERIFY( pSinkServer->bCalledProto );
+
+#if 0 // TODO
+    QTcpSocket& clientSocket =  client.socket();
+    server.send_ProtocolVersion(&clientSocket);
+
+    QVERIFY( QObject::connect(&client, SIGNAL(dataProcessed()), &loop, SLOT(quit())) );
+    loop.exec();
+
+    QVERIFY( pSinkClient->bCalledProto );
+#endif
 }
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

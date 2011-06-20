@@ -46,28 +46,18 @@ private:
 class SisCommandBuilder : public QObject
 {
 public:
+    SisCommandBuilder(QObject* parent = 0);
+
     static void build_ProtocolVersion(QDataStream&);
     static void build_DiscoveredImageSets(QDataStream&, int count);
 
     inline void setBuffer(QBuffer* pds) { m_pbuf = pds; }
     inline QBuffer* buffer() { return m_pbuf; }
 
-    virtual void send(const QBuffer&) = 0;
+    virtual void send(const QBuffer&, void* pvContext) = 0;
 
-    inline void prepareBuffer()
-    {
-        m_pbuf->seek(0);
-        m_pbuf->close();
-        m_pbuf->setData(0, 0);
-        m_pbuf->open(QIODevice::ReadWrite);
-    }
-
-    inline void send_ProtocolVersion() {
-        prepareBuffer();
-        QDataStream ds(m_pbuf);
-        build_ProtocolVersion(ds);
-        send(*m_pbuf);
-    }
+    void prepareBuffer();
+    void send_ProtocolVersion(void* pvContext);
 
 private:
     QBuffer* m_pbuf;

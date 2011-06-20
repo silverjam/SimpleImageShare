@@ -6,7 +6,7 @@
 
 #include "sislibrary.h"
 
-class SisServer : public QObject
+class SisServer : public SisCommandBuilder
 {
     Q_OBJECT
 public:
@@ -22,13 +22,15 @@ public slots:
     void handleData(QObject*);
 
 private:
-    inline virtual void incoming_ProtocolVersion(int) { qDebug("proto version"); }
-    inline virtual void incoming_DiscoverImageSets(int) { qDebug("discover image sets"); }
+    // From SisCommandBuilder
+    virtual void send(const QBuffer &, void *pvContext);
 
     QTcpServer* m_pServer;
     QSignalMapper* m_pSigMap;
 
-    SisCommandParser m_parser;
+    SisCommandParser* m_pParser;
+
+    QBuffer m_buffer;
 };
 
 #endif // SERVER_H

@@ -94,13 +94,12 @@ SisCommandParser::parseOne(QDataStream& ds, quint32 command)
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 void
-SisCommandBuilder::build_ProtocolVersion(QDataStream& ds)
+SisCommandBuilder::prepareBuffer()
 {
-    ProtocolVersion data;
-    data.version = CURRENT_PROTOCOL_VERSION;
-
-    ds << COMMAND_PROTO_VERSION;
-    ds << data;
+    m_pbuf->seek(0);
+    m_pbuf->close();
+    m_pbuf->setData(0, 0);
+    m_pbuf->open(QIODevice::ReadWrite);
 }
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -136,4 +135,32 @@ SisCommandParser::parse_DiscoveredImageSets(QDataStream& ds)
     m_pSink->emit_DiscoverImageSets(data.count);
 
     return true;
+}
+
+
+// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+SisCommandBuilder::SisCommandBuilder(QObject* parent /*= 0*/)
+    : QObject(parent)
+{
+}
+
+// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+void
+SisCommandBuilder::send_ProtocolVersion(void* pvContext)
+{
+    prepareBuffer();
+    QDataStream ds(m_pbuf);
+    build_ProtocolVersion(ds);
+    send(*m_pbuf, pvContext);
+}
+
+// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+void
+SisCommandBuilder::build_ProtocolVersion(QDataStream& ds)
+{
+    ProtocolVersion data;
+    data.version = CURRENT_PROTOCOL_VERSION;
+
+    ds << COMMAND_PROTO_VERSION;
+    ds << data;
 }

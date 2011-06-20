@@ -4,11 +4,13 @@
 SisClient::SisClient(const QString& address, quint16 port, CommandSink* pSink)
     : m_host(address)
     , m_port(port)
-    , m_pSink(pSink)
     , m_pSocket(0)
+    , m_pParser(new SisCommandParser(pSink, this))
 {
     m_buffer.open(QBuffer::ReadWrite);
-    setBuffer(&m_buffer);
+    SisCommandBuilder::setBuffer(&m_buffer);
+
+    connect(m_pParser, SIGNAL(dataProcessed()), this, SIGNAL(dataProcessed()));
 }
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -18,8 +20,8 @@ SisClient::connectToHost()
     m_pSocket = new QTcpSocket(this);
     m_pSocket->connectToHost(m_host, m_port);
 
-    connect(m_pSocket, SIGNAL(connected()), this, SIGNAL(connected()));
-    connect(m_pSocket, SIGNAL(readyRead()), this, SLOT(handleData()));
+    Q_ASSERT( connect(m_pSocket, SIGNAL(connected()), this, SIGNAL(connected())) );
+    Q_ASSERT( connect(m_pSocket, SIGNAL(readyRead()), this, SLOT(handleData())) );
 }
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -27,12 +29,13 @@ void
 SisClient::handleData()
 {
     QByteArray buffer = m_pSocket->readAll();
-    qDebug("%s", buffer.data());
+    m_pParser->processData(buffer);
 }
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 void
-SisClient::send(const QBuffer& buf)
+SisClient::send(const QBuffer& buf, void*)
 {
-    m_pSocket->write(buf.data());
+    qint64 writeCount = m_pSocket->write(buf.data());
+    Q_ASSERT( writeCount == buf.size() );
 }
