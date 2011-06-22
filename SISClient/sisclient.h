@@ -13,6 +13,8 @@ public:
     SisClient(const QString& address, quint16 port, CommandSink*);
 
     void connectToHost();
+    void closeConnection();
+
     inline QTcpSocket& socket() { return *m_pSocket; }
 
 signals:

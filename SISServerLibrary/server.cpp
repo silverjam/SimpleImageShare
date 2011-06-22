@@ -13,6 +13,7 @@ SisServer::SisServer(CommandSink* pSink, QHostAddress address/* = QHostAddress::
     SisCommandBuilder::setBuffer(&m_buffer);
 
     m_pSigMap = new QSignalMapper(this);
+    m_pSigMapDisco = new QSignalMapper(this);
 
     connect(m_pServer, SIGNAL(newConnection()), this, SLOT(handleConnection()));
     connect(m_pParser, SIGNAL(dataProcessed()), this, SIGNAL(dataProcessed()));
@@ -26,16 +27,46 @@ SisServer::port() const
 }
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+QList<QTcpSocket*>
+SisServer::clients() const
+{
+    return m_mapClients.values();
+}
+
+// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 void
 SisServer::handleConnection()
 {
     QTcpSocket* pSocket = m_pServer->nextPendingConnection();
 
     connect(pSocket, SIGNAL(readyRead()), m_pSigMap, SLOT(map()));
+    connect(pSocket, SIGNAL(disconnected()), m_pSigMapDisco, SLOT(map()));
 
     m_pSigMap->setMapping(pSocket, pSocket);
+    m_pSigMapDisco->setMapping(pSocket, pSocket);
 
     connect(m_pSigMap, SIGNAL(mapped(QObject*)), this, SLOT(handleData(QObject*)));
+    connect(m_pSigMapDisco, SIGNAL(mapped(QObject*)), this, SLOT(handleDisconnect(QObject*)));
+
+    m_mapClients.insert(pSocket, pSocket);
+
+    emit newClient();
+}
+
+// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+void
+SisServer::handleDisconnect(QObject* pObject)
+{
+    QTcpSocket* pSocket = qobject_cast<QTcpSocket*>(pObject);
+    if ( ! pSocket )
+    {
+        qDebug("non socket passed to handleDisconnect (%s:%d)", __FILE__, __LINE__);
+        return;
+    }
+
+    m_mapClients.remove(pSocket);
+
+    emit lostClient();
 }
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

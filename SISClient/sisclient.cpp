@@ -26,6 +26,22 @@ SisClient::connectToHost()
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 void
+SisClient::closeConnection()
+{
+    if ( ! m_pSocket )
+    {
+        qDebug("%s called without a socket (%s:%d)", __FUNCTION__, __FILE__, __LINE__);
+        return;
+    }
+
+    Q_ASSERT( disconnect(m_pSocket, SIGNAL(connected()), this, SIGNAL(connected())) );
+    Q_ASSERT( disconnect(m_pSocket, SIGNAL(readyRead()), this, SLOT(handleData())) );
+
+    m_pSocket->close();
+}
+
+// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+void
 SisClient::handleData()
 {
     QByteArray buffer = m_pSocket->readAll();

@@ -21,6 +21,7 @@ private Q_SLOTS:
     void testServer();
     void testDataPool();
     void testDataPool2();
+    void testClientList();
 };
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -261,6 +262,57 @@ SISLibraryTest::testDataPool2()
     QVERIFY( readBuffer2.size() == sizeof(buf2) );
 
     QVERIFY( ::memcmp(readBuffer2.data(), buf2, sizeof(buf2)) == 0 );
+}
+
+// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+void
+SISLibraryTest::testClientList()
+{
+    int argc = 1;
+    const char* argv[] = { "test" };
+
+    QCoreApplication app(argc, (char**)argv);
+    (void)app;
+
+    TestServerSink* pSinkServer(new TestServerSink);
+    SisServer server(pSinkServer, QHostAddress::LocalHost, 0);
+
+    TestServerSink* pSinkClient(new TestServerSink);
+    SisClient client("127.0.0.1", server.port(), pSinkClient);
+
+    QVERIFY( server.clients().count() == 0 );
+
+    client.connectToHost();
+
+    QEventLoop loop;
+    QObject::connect(&server, SIGNAL(newClient()), &loop, SLOT(quit()));
+    loop.exec();
+
+    QVERIFY( server.clients().count() == 1 );
+    QVERIFY( server.clients().first()->peerPort() == client.socket().localPort() );
+
+    SisClient client2("127.0.0.1", server.port(), pSinkClient);
+    client2.connectToHost();
+
+    QObject::connect(&server, SIGNAL(newClient()), &loop, SLOT(quit()));
+    loop.exec();
+
+    QVERIFY( server.clients().count() == 2 );
+
+    client.closeConnection();
+
+    QObject::connect(&server, SIGNAL(lostClient()), &loop, SLOT(quit()));
+    loop.exec();
+
+    QVERIFY( server.clients().count() == 1 );
+    QVERIFY( server.clients().first()->peerPort() == client2.socket().localPort() );
+
+    client2.closeConnection();
+
+    QObject::connect(&server, SIGNAL(lostClient()), &loop, SLOT(quit()));
+    loop.exec();
+
+    QVERIFY( server.clients().count() == 0 );
 }
 
 QTEST_APPLESS_MAIN(SISLibraryTest)
