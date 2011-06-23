@@ -15,8 +15,12 @@ SisServer::SisServer(CommandSink* pSink, QHostAddress address/* = QHostAddress::
     m_pSigMap = new QSignalMapper(this);
     m_pSigMapDisco = new QSignalMapper(this);
 
-    connect(m_pServer, SIGNAL(newConnection()), this, SLOT(handleConnection()));
-    connect(m_pParser, SIGNAL(dataProcessed()), this, SIGNAL(dataProcessed()));
+    VERIFY( connect(m_pServer, SIGNAL(newConnection()), this, SLOT(handleConnection())) );
+    VERIFY( connect(m_pParser, SIGNAL(dataProcessed()), this, SIGNAL(dataProcessed())) );
+
+    VERIFY( connect(m_pSigMap, SIGNAL(mapped(QObject*)), this, SLOT(handleData(QObject*))) );
+    VERIFY( connect(m_pSigMapDisco, SIGNAL(mapped(QObject*)), this, SLOT(handleDisconnect(QObject*))) );
+
 }
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -39,14 +43,11 @@ SisServer::handleConnection()
 {
     QTcpSocket* pSocket = m_pServer->nextPendingConnection();
 
-    connect(pSocket, SIGNAL(readyRead()), m_pSigMap, SLOT(map()));
-    connect(pSocket, SIGNAL(disconnected()), m_pSigMapDisco, SLOT(map()));
+    VERIFY( connect(pSocket, SIGNAL(readyRead()), m_pSigMap, SLOT(map())) );
+    VERIFY( connect(pSocket, SIGNAL(disconnected()), m_pSigMapDisco, SLOT(map())) );
 
     m_pSigMap->setMapping(pSocket, pSocket);
     m_pSigMapDisco->setMapping(pSocket, pSocket);
-
-    connect(m_pSigMap, SIGNAL(mapped(QObject*)), this, SLOT(handleData(QObject*)));
-    connect(m_pSigMapDisco, SIGNAL(mapped(QObject*)), this, SLOT(handleDisconnect(QObject*)));
 
     m_mapClients.insert(pSocket, pSocket);
 
@@ -65,6 +66,12 @@ SisServer::handleDisconnect(QObject* pObject)
     }
 
     m_mapClients.remove(pSocket);
+
+    VERIFY( disconnect(pSocket, SIGNAL(readyRead()), m_pSigMap, SLOT(map())) );
+    VERIFY( disconnect(pSocket, SIGNAL(disconnected()), m_pSigMapDisco, SLOT(map())) );
+
+    m_pSigMap->removeMappings(pSocket);
+    pSocket->deleteLater();
 
     emit lostClient();
 }

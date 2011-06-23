@@ -20,8 +20,8 @@ SisClient::connectToHost()
     m_pSocket = new QTcpSocket(this);
     m_pSocket->connectToHost(m_host, m_port);
 
-    Q_ASSERT( connect(m_pSocket, SIGNAL(connected()), this, SIGNAL(connected())) );
-    Q_ASSERT( connect(m_pSocket, SIGNAL(readyRead()), this, SLOT(handleData())) );
+    VERIFY( connect(m_pSocket, SIGNAL(connected()), this, SIGNAL(connected())) );
+    VERIFY( connect(m_pSocket, SIGNAL(readyRead()), this, SLOT(handleData())) );
 }
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -34,8 +34,8 @@ SisClient::closeConnection()
         return;
     }
 
-    Q_ASSERT( disconnect(m_pSocket, SIGNAL(connected()), this, SIGNAL(connected())) );
-    Q_ASSERT( disconnect(m_pSocket, SIGNAL(readyRead()), this, SLOT(handleData())) );
+    VERIFY( disconnect(m_pSocket, SIGNAL(connected()), this, SIGNAL(connected())) );
+    VERIFY( disconnect(m_pSocket, SIGNAL(readyRead()), this, SLOT(handleData())) );
 
     m_pSocket->close();
 }
