@@ -169,6 +169,9 @@ SISLibraryTest::testServer()
     TestServerSink* pSinkClient(new TestServerSink);
     SisClient client("127.0.0.1", server.port(), pSinkClient);
 
+    QVERIFY( ! pSinkServer->bCalledProto );
+    QVERIFY( ! pSinkClient->bCalledProto );
+
     client.connectToHost();
 
     QEventLoop loop;
@@ -185,15 +188,13 @@ SISLibraryTest::testServer()
 
     QVERIFY( pSinkServer->bCalledProto );
 
-#if 0 // TODO
-    QTcpSocket& clientSocket =  client.socket();
-    server.send_ProtocolVersion(&clientSocket);
+    QTcpSocket* pClientSocket = server.clients().first();
+    server.send_ProtocolVersion(pClientSocket);
 
     QVERIFY( QObject::connect(&client, SIGNAL(dataProcessed()), &loop, SLOT(quit())) );
     loop.exec();
 
     QVERIFY( pSinkClient->bCalledProto );
-#endif
 }
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
