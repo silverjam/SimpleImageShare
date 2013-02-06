@@ -2,7 +2,10 @@
 #define MAINWINDOW_H
 
 #include <QtGui>
-#include <QMainWindow>
+
+#include <QtWidgets/QMainWindow>
+#include <QtWidgets/QGraphicsScene>
+#include <QtWidgets/QGraphicsPixmapItem>
 
 namespace Ui {
     class MainWindow;

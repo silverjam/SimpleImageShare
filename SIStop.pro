@@ -6,7 +6,7 @@ SUBDIRS += \
     SISLibraryTest \
     SISServer \
     SISClient \
-    SIS \
+    SIS
 
 SISLibraryTest.depends += \
     SISLibrary \

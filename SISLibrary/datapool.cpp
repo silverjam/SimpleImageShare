@@ -1,5 +1,7 @@
 #include "datapool.h"
 
+#include <cstdint>
+
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 DataPool::DataPool()
     : m_chunkSize(INT64_MAX)
